@@ -7,6 +7,10 @@
 #include <limits.h>  // Para definir o valor de INF
 #include <math.h>
 
+
+
+
+///////////////////////////// ALGORITMO A* /////////////////////////
 typedef struct open_list{
 
 };
@@ -37,8 +41,6 @@ int cost_to_use_Node(int* visitados, Noh* noh){
     cost = amount + heuristc;
     return cost;
 }
-
-//Algoritmo A*//
 
 int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados){
     
