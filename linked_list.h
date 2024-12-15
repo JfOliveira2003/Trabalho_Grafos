@@ -3,8 +3,6 @@
 
 // Estrutura para um n� da lista encadeada
 typedef struct Noh {
-    int posicaoY;
-    int posicaoX;
     int valor;             // �ndice do n�
     struct Noh* proximo;   // Ponteiro para o pr�ximo n�
 } Noh;
