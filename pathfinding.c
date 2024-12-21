@@ -12,33 +12,34 @@
 
 ///////////////////////////// ALGORITMO A* /////////////////////////
 typedef struct open_list{
+    Noh* proximo;
+} open_list;
 
-};
+typedef struct closed_list{
+    Noh* proximo;
+} closed_list;
 
 
-int heuristc(int position_y_Noh, int position_x_Noh){
+int heuristc(Noh current_noh, Noh goal, int size){
+    int x1 = current_noh.valor % size;
+    int y1 = current_noh.valor / size;
 
-    int heuristic_manhattan, somatorioX, somatorioY;
-    int i, j;
-    for(i = position_y_Noh; i < 18; i++){
-        somatorioX++;
-        for(j = position_x_Noh; i < 18; j++)
-            somatorioY++;
-    }
-    heuristic_manhattan = somatorioY + somatorioX;
-    return heuristic_manhattan;
+    int x2 = goal.valor % size;
+    int y2 = goal.valor / size;
+
+    return abs(x1 - x2) + abs(y1 - y2);
 }
 
-int cost_to_use_Node(int* visitados, Noh* noh){
+int cost_to_use_Node(Noh current, Noh goal, int* visitados, int size){
     int i, amount, heuristic, cost;
     i = 0;
     while(visitados[i] != NULL){
         amount++;
         i++;
     }
-    heuristic = heuristc(noh->posicaoY, noh->posicaoX);
+    heuristic = heuristc(current, goal, size);
     
-    cost = amount + heuristc;
+    cost = amount + heuristc + 1;
     return cost;
 }
 
