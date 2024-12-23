@@ -43,12 +43,36 @@ int cost_to_use_Node(Noh current, Noh goal, int* visitados, int size){
     return cost;
 }
 
+
+search_near_noh(Noh* noh, int** adjMatrix, int numNos){
+    for(int i = 0; i < numNos; i++){
+        if(ehIgual(adjMatrix[noh->valor][i], 1)){
+            
+        }
+    }
+}
+
 int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados){
+    Noh* atual = criarNoh(inicio);
+
+    open_list* my_open_list = (open_list *)malloc(sizeof(open_list));
+    (*my_open_list).proximo = atual;
+    (*my_open_list).proximo = NULL; 
     
+
+    
+    
+    int final = ehIgual(fim, atual->valor);
+    while(!final){
+        search_near_noh(atual, adjMatrix, numNos);
+
+    }
+    return 1;
 }
 
 
 
+int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados);
 
 
 
