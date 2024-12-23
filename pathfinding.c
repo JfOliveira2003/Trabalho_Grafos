@@ -11,12 +11,16 @@
 
 
 ///////////////////////////// ALGORITMO A* /////////////////////////
+
 typedef struct open_list{
     Noh* proximo;
+    Noh* father;
+    int F;
 } open_list;
 
 typedef struct closed_list{
     Noh* proximo;
+    Noh* father;
 } closed_list;
 
 
@@ -37,17 +41,19 @@ int cost_to_use_Node(Noh current, Noh goal, int* visitados, int size){
         amount++;
         i++;
     }
-    heuristic = heuristc(current, goal, size);
+    int heuristic = heuristc(current, goal, size);
     
-    cost = amount + heuristc + 1;
+    cost = amount + heuristic + 1;
     return cost;
 }
 
 
-search_near_noh(Noh* noh, int** adjMatrix, int numNos){
+search_near_noh(Noh* node, int** adjMatrix, int numNos){
     for(int i = 0; i < numNos; i++){
-        if(ehIgual(adjMatrix[noh->valor][i], 1)){
-            
+        int adj_node = adjMatrix[node->valor][i];
+        if(ehIgual(adj_node, 1)){
+            criarNoh(adj_node);
+
         }
     }
 }
