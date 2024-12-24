@@ -8,81 +8,123 @@
 #include <math.h>
 
 
+int heuristic(int node_y, int node_x, int end_y, int end_x){
 
-
+    return abs(node_x - end_x) + abs(node_y - end_y);
+}
 ///////////////////////////// ALGORITMO A* /////////////////////////
-typedef struct open_list{
-    Noh* proximo;
-} open_list;
 
-typedef struct closed_list{
-    Noh* proximo;
-} closed_list;
+typedef struct PriorityQueue {
+    int* nodes;            
+    int* priorities;       
+    int size;
+    int capacity;
+} PriorityQueue;
 
-
-int heuristc(Noh current_noh, Noh goal, int size){
-    int x1 = current_noh.valor % size;
-    int y1 = current_noh.valor / size;
-
-    int x2 = goal.valor % size;
-    int y2 = goal.valor / size;
-
-    return abs(x1 - x2) + abs(y1 - y2);
+PriorityQueue* createPriorityQueue(int capacity) {
+    PriorityQueue* pq = (PriorityQueue*)malloc(sizeof(PriorityQueue));
+    pq->nodes = (int*)malloc(capacity * sizeof(int));
+    pq->priorities = (int*)malloc(capacity * sizeof(int));
+    pq->size = 0;
+    pq->capacity = capacity;
+    return pq;
 }
 
-int cost_to_use_Node(Noh current, Noh goal, int* visitados, int size){
-    int i, amount, heuristic, cost;
-    i = 0;
-    while(visitados[i] != NULL){
-        amount++;
-        i++;
-    }
-    heuristic = heuristc(current, goal, size);
-    
-    cost = amount + heuristc + 1;
-    return cost;
+void push(PriorityQueue* pq, int node, int priority) {
+    if (pq->size == pq->capacity) return;
+    pq->nodes[pq->size] = node;
+    pq->priorities[pq->size] = priority;
+    pq->size++;
 }
 
-// int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados){
+int pop(PriorityQueue* pq) {
+    int minIndex = 0;
+    for (int i = 1; i < pq->size; i++) {
+        if (pq->priorities[i] < pq->priorities[minIndex]) {
+            minIndex = i;
+        }
+    }
+    int minNode = pq->nodes[minIndex];
+    pq->size--;
+    for (int i = minIndex; i < pq->size; i++) {
+        pq->nodes[i] = pq->nodes[i + 1];
+        pq->priorities[i] = pq->priorities[i + 1];
+    }
+    return minNode;
+}
+
+int contains(PriorityQueue* pq, int node) {
+    for (int i = 0; i < pq->size; i++) {
+        if (pq->nodes[i] == node) return 1;
+    }
+    return 0;
+}
+
+void addNodeToPath(Noh** caminho, int valor) {
+    Noh* novoNoh = (Noh*)malloc(sizeof(Noh));
+    novoNoh->valor = valor;
+    novoNoh->proximo = *caminho;
+    *caminho = novoNoh;
+}
+
+int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados) {
+    int* gScores = (int*)malloc(numNos * sizeof(int));
+    int* fScores = (int*)malloc(numNos * sizeof(int));
+    int* cameFrom = (int*)malloc(numNos * sizeof(int));
     
-// }
-
-
-
-
-
-
-
-//////////////////////////////////////////// BUSCA EM PROFUNDIDADE //////////////////////////////////////
-
-int findPathRec(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados, int* contadorVisitacao) {
-    visitados[inicio] = ++(*contadorVisitacao);  // Marca a ordem de visita��o do n� atual
-
-    adicionarNoh(caminho, inicio);
-
-    if (ehIgual(inicio, fim)) {
-        return 1;
+    for (int i = 0; i < numNos; i++) {
+        gScores[i] = INT_MAX;
+        fScores[i] = INT_MAX;
+        cameFrom[i] = -1;
+        visitados[i] = 0;
     }
 
-    for (int i = 0; ehMenor(i, numNos); i++) {
-        // Usa visitados para verificar se o n� j� foi visitado
-        if (ehIgual(adjMatrix[inicio][i], 1) && ehIgual(visitados[i], 0)) {
-            if (findPathRec(adjMatrix, numNos, i, fim, caminho, visitados, contadorVisitacao)) {
-                return 1;
+    gScores[inicio] = 0;
+    fScores[inicio] = heuristic(0, inicio, 0, fim); // Update with correct node coordinates if needed
+
+    PriorityQueue* openSet = createPriorityQueue(numNos);
+    push(openSet, inicio, fScores[inicio]);
+
+    while (openSet->size > 0) {
+        int current = pop(openSet);
+        visitados[current] = 1;
+
+        if (current == fim) {
+            *caminho = NULL;
+            while (current != -1) {
+                addNodeToPath(caminho, current);
+                current = cameFrom[current];
+            }
+            free(gScores);
+            free(fScores);
+            free(cameFrom);
+            free(openSet->nodes);
+            free(openSet->priorities);
+            free(openSet);
+            return 1; // Path found
+        }
+
+        for (int neighbor = 0; neighbor < numNos; neighbor++) {
+            if (adjMatrix[current][neighbor] > 0 && !visitados[neighbor]) {
+                int tentative_gScore = gScores[current] + adjMatrix[current][neighbor];
+                if (tentative_gScore < gScores[neighbor]) {
+                    cameFrom[neighbor] = current;
+                    gScores[neighbor] = tentative_gScore;
+                    fScores[neighbor] = gScores[neighbor] + heuristic(0, neighbor, 0, fim); // Update coordinates if needed
+
+                    if (!contains(openSet, neighbor)) {
+                        push(openSet, neighbor, fScores[neighbor]);
+                    }
+                }
             }
         }
     }
 
-    removerNoh(caminho, inicio);
-    return 0;
-}
-
-int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados) {
-    int contadorVisitacao = 0;  // Inicializa o contador de visita��o
-
-    for (int i = 0; ehMenor(i, numNos); i++) {
-        visitados[i] = 0;  // Zera o vetor de n�s visitados
-    }
-
-    return findPathRec(adjMatrix, numNos, inicio, fim, caminho, visitados, &contadorVisitacao);
+    free(gScores);
+    free(fScores);
+    free(cameFrom);
+    free(openSet->nodes);
+    free(openSet->priorities);
+    free(openSet);
+    return 0; // Path not found
 }

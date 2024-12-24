@@ -5,6 +5,7 @@
         "comparisons.h": "c",
         "pathfinding.h": "c",
         "math.h": "c",
-        "limits.h": "c"
+        "limits.h": "c",
+        "time.h": "c"
     }
 }
