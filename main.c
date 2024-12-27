@@ -373,12 +373,14 @@ int main(int argc, char* argv[]) {
 
                     int startIndex = start.y * size + start.x;
                     int endIndex = end.y * size + end.x;
+                    printf("%d", endIndex);
 
                     Noh* caminho = NULL;
                     resetComparisons();
 
                     // Executa o algoritmo de busca de caminho
                     if (findPath(adjMatrix, numNos, startIndex, endIndex, &caminho, visitados)) {
+                        printf("Oi");
                         // Verifica se a lista est� invertida
                         if (estaInvertido(caminho, endIndex)) {
                             caminho = inverterLista(caminho);
