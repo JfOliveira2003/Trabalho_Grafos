@@ -1,10 +1,13 @@
 {
     "files.associations": {
+        "*.ndjson": "jsonl",
+        "*.dbclient-js": "javascript",
         "*.java": "java",
         "string.h": "c",
         "comparisons.h": "c",
         "pathfinding.h": "c",
         "math.h": "c",
-        "limits.h": "c"
+        "limits.h": "c",
+        "sdl.h": "c"
     }
 }
