@@ -16,15 +16,29 @@ typedef struct open_list
     int F;
     struct open_list *next;
 } open_list;
-
+open_list *my_open_list;
 typedef struct closed_list
 {
     Noh *node;
     Noh *father;
     struct closed_list *next;
 } closed_list;
+closed_list *my_closed_list;
 
-int search_in_open_list(Noh *node, open_list *my_open_list)
+closed_list *return_in_closed_list(Noh *node)
+{
+    closed_list *current = my_closed_list;
+    while (current != NULL)
+    {
+        if (node->valor == current->node->valor)
+        {
+            return current;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+int search_in_open_list(Noh *node)
 {
     open_list *current = my_open_list;
     while (current != NULL)
@@ -37,7 +51,20 @@ int search_in_open_list(Noh *node, open_list *my_open_list)
     }
     return 0;
 }
-void compare_F(Noh *node, open_list *my_open_list, int F)
+int search_in_closed_list(Noh *node)
+{
+    closed_list *current = my_closed_list;
+    while (current != NULL)
+    {
+        if (node->valor == current->node->valor)
+        {
+            return 1;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+void compare_F(Noh *node, int F)
 {
     open_list *current = my_open_list;
     while (current != NULL)
@@ -56,7 +83,7 @@ void compare_F(Noh *node, open_list *my_open_list, int F)
     }
 }
 
-void add_to_open_list(Noh *node, Noh *father, int F, open_list *my_open_list)
+void add_to_open_list(Noh *node, Noh *father, int F)
 {
 
     if (my_open_list->node == NULL)
@@ -67,46 +94,25 @@ void add_to_open_list(Noh *node, Noh *father, int F, open_list *my_open_list)
         my_open_list->next = NULL;
         return;
     }
-    else
+
+    open_list *current = my_open_list;
+    if (F < current->F)
     {
-        open_list *current = my_open_list;
-        if (F < current->F)
+        open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
+        new_open_list->node = node;
+        new_open_list->father = father;
+        new_open_list->F = F;
+        new_open_list->next = my_open_list;
+        my_open_list = new_open_list;
+        return;
+    }
+    open_list *previous = current;
+    current = current->next;
+    while (current->next != NULL)
+    {
+        if (F == current->F)
         {
-            open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
-            new_open_list->node = node;
-            new_open_list->father = father;
-            new_open_list->F = F;
-            new_open_list->next = current;
-            return;
-        }
-        open_list *previous = current;
-        current = current->next;
-        while (current->next != NULL)
-        {
-            if (F == current->F)
-            {
-                if (node->valor < current->node->valor)
-                {
-                    open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
-                    new_open_list->node = node;
-                    new_open_list->father = father;
-                    new_open_list->F = F;
-                    previous->next = new_open_list;
-                    new_open_list->next = current;
-                    return;
-                }
-                else if (node->valor > current->node->valor)
-                {
-                    open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
-                    new_open_list->node = node;
-                    new_open_list->father = father;
-                    new_open_list->F = F;
-                    new_open_list->next = current->next;
-                    current->next = new_open_list;
-                    return;
-                }
-            }
-            if (F < current->F)
+            if (node->valor < current->node->valor)
             {
                 open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
                 new_open_list->node = node;
@@ -114,190 +120,198 @@ void add_to_open_list(Noh *node, Noh *father, int F, open_list *my_open_list)
                 new_open_list->F = F;
                 previous->next = new_open_list;
                 new_open_list->next = current;
+
+                return;
             }
-            current = current->next;
+            else if (node->valor > current->node->valor)
+            {
+                open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
+                new_open_list->node = node;
+                new_open_list->father = father;
+                new_open_list->F = F;
+                new_open_list->next = current->next;
+                current->next = new_open_list;
+                return;
+            }
         }
-        open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
-        new_open_list->node = node;
-        new_open_list->father = father;
-        new_open_list->F = F;
-        new_open_list->next = NULL;
-        current->next = new_open_list;
+        if (F < current->F)
+        {
+            open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
+            new_open_list->node = node;
+            new_open_list->father = father;
+            new_open_list->F = F;
+            previous->next = new_open_list;
+            new_open_list->next = current;
+        }
+        current = current->next;
+        previous = previous->next;
+    }
+    open_list *new_open_list = (open_list *)malloc(sizeof(open_list));
+    new_open_list->node = node;
+    new_open_list->father = father;
+    new_open_list->F = F;
+    new_open_list->next = NULL;
+    current->next = new_open_list;
+    return;
+}
+void remove_from_open_list(Noh *node)
+{
+    open_list *aux = my_open_list;
+
+    if (my_open_list->node == node)
+    {
+        my_open_list = my_open_list->next;
+        free(aux);
         return;
     }
+    else
+        return;
 }
-    void remove_from_open_list(Noh * node, open_list * my_open_list)
+
+void add_path(Noh **caminho)
+{
+    closed_list *current = my_closed_list;
+    adicionarNoh(caminho, current->node->valor);
+    Noh *aux = current->father;
+    while (aux != NULL)
     {
-        open_list *current = my_open_list;
-        open_list *prev = NULL;
-
-        while (current != NULL && current->node->valor != node->valor)
-        {
-            prev = current;
-            current = current->next;
-        }
-
-        if (current == NULL)
-        {
-            // Node not found in the list
-            return;
-        }
-
-        if (prev == NULL)
-        {
-            my_open_list = current->next;
-        }
-        else
-        {
-            prev->next = current->next;
-            current->next = NULL;
-        }
-        free(prev);
-        free(current);
+        adicionarNoh(caminho, aux->valor);
+        current = return_in_closed_list(aux);
+        aux = current->father;
     }
-
-    void add_path(Noh * *caminho, closed_list * my_closed_list)
+    adicionarNoh(caminho, aux->valor);
+}
+void add_to_closed_list(Noh *node, Noh *father)
+{
+    if (my_closed_list->node == NULL)
+    {
+        my_closed_list->node = node;
+        my_closed_list->father = father;
+        my_closed_list->next = NULL;
+    }
+    else
     {
         closed_list *current = my_closed_list;
-        Noh* aux = my_closed_list->node;
-        while (aux != NULL)
+        while (current->next != NULL)
         {
-            adicionarNoh(caminho, current->node->valor);
-            aux = current->father;
+            current = current->next;
         }
+        closed_list *new_closed_list = (closed_list *)malloc(sizeof(closed_list));
+        new_closed_list->node = node;
+        new_closed_list->father = father;
+        new_closed_list->next = NULL;
+        current->next = new_closed_list;
     }
-    void add_to_closed_list(Noh * node, Noh * father, closed_list * my_closed_list)
+}
+
+int heuristc(Noh *current_noh, Noh *goal, int size)
+{
+    int x1 = current_noh->valor % size;
+    int y1 = current_noh->valor / size;
+
+    int x2 = goal->valor % size;
+    int y2 = goal->valor / size;
+
+    return (abs(x1 - x2) + abs(y1 - y2));
+}
+
+int cost_to_use_Node(Noh *current, Noh *goal, int size, int count)
+{
+    int heuristic, cost;
+    heuristic = heuristc(current, goal, size);
+
+    cost = count + heuristic + 1;
+    return cost;
+}
+
+void search_near_noh(Noh *node, int **adjMatrix, int numNos, Noh *fim, int *visitados, int count)
+{
+    Noh* aux;
+    for (int i = 0; i < numNos; i++)
     {
-        if (my_closed_list->node == NULL)
+        int line = node->valor / numNos;
+        int node_adj_value = adjMatrix[line][i];
+        aux = criarNoh(i);
+        if (ehIgual(node_adj_value, 1)== 1 && search_in_closed_list(aux) == 0)
         {
-            my_closed_list->node = node;
-            my_closed_list->father = father;
-            my_closed_list->next = NULL;
-        }
-        else
-        {
-            closed_list *current = my_closed_list;
-            while (current->next != NULL)
+            Noh *node_adj = criarNoh(i);
+            if (search_in_open_list(node_adj) == 1)
             {
-                current = current->next;
+                int cost = cost_to_use_Node(node_adj, fim, numNos, count);
+                compare_F(node_adj, cost);
             }
-            closed_list *new_closed_list = (closed_list *)malloc(sizeof(closed_list));
-            new_closed_list->node = node;
-            new_closed_list->father = father;
-            new_closed_list->next = NULL;
-            current->next = new_closed_list;
-        }
-    }
-
-    int heuristc(Noh * current_noh, Noh * goal, int size)
-    {
-        int x1 = current_noh->valor % size;
-        int y1 = current_noh->valor / size;
-
-        int x2 = goal->valor % size;
-        int y2 = goal->valor / size;
-
-        return abs(x1 - x2) + abs(y1 - y2);
-    }
-
-    int cost_to_use_Node(Noh * current, Noh * goal, int size, int count)
-    {
-        int heuristic, cost;
-        heuristic = heuristc(current, goal, size);
-
-        cost = count + heuristic + 1;
-        return cost;
-    }
-
-    void search_near_noh(Noh * node, int **adjMatrix, int numNos, open_list *my_open_list, Noh *fim, int *visitados, int count)
-    {
-        for (int i = 0; i < numNos; i++)
-        { // int line = node->valor / numNos;
-            int node_adj_value = adjMatrix[node->valor][i];
-            if (ehIgual(node_adj_value, 1))
+            else if (search_in_open_list(node_adj) == 0)
             {
-                Noh *node_adj = criarNoh(i);
-                if (search_in_open_list(node_adj, my_open_list))
-                {
-                    int cost = cost_to_use_Node(node_adj, fim, numNos, count);
-                    compare_F(node_adj, my_open_list, cost);
-                }
-                else if (!search_in_open_list(node_adj, my_open_list))
-                {
-                    int cost = cost_to_use_Node(node_adj, fim, numNos, count);
-                    add_to_open_list(node_adj, node, cost, my_open_list);
-                }
+                int cost = cost_to_use_Node(node_adj, fim, numNos, count);
+                add_to_open_list(node_adj, node, cost);
             }
         }
     }
+}
 
-    int findPath(int **adjMatrix, int numNos, int inicio, int fim, Noh **caminho, int *visitados)
+int findPath(int **adjMatrix, int numNos, int inicio, int fim, Noh **caminho, int *visitados)
+{
+    printf("oi");
+    Noh *atual = criarNoh(inicio);
+    Noh *goal = criarNoh(fim);
+
+    my_open_list = (open_list *)malloc(sizeof(open_list));
+    my_closed_list = (closed_list *)malloc(sizeof(closed_list));
+    // add_to_open_list(atual, NULL, 0);
+    // remove_from_open_list(atual);
+    add_to_closed_list(atual, NULL);
+    visitados[0] = inicio;
+    int count = 1;
+
+    int final = ehIgual(fim, atual->valor);
+    printf("%d", final);
+    while (final != 1 || my_open_list->node != NULL)
     {
-        printf("oi");
-        Noh *atual = criarNoh(inicio);
-        Noh *goal = criarNoh(fim);
-
-        open_list *my_open_list = (open_list *)malloc(sizeof(open_list));
-        my_open_list->node = NULL;
-        my_open_list->next = NULL;
-        closed_list *my_closed_list = (closed_list *)malloc(sizeof(closed_list));
-        my_closed_list->node = NULL;
-        my_closed_list->next = NULL;
-        add_to_open_list(atual, NULL, 0, my_open_list);
-        remove_from_open_list(atual, my_open_list);
-        add_to_closed_list(atual, NULL, my_closed_list);
-        visitados[0] = inicio;
-        int count = 1;
-
-        int final = ehIgual(fim, atual->valor);
-        printf("%d", final);
-        while (final != 1)
+        search_near_noh(atual, adjMatrix, numNos, goal, visitados, count);
+        my_open_list = my_open_list->next;
+        printf("%d", my_open_list->node->valor);
+        atual = my_open_list->node;
+        remove_from_open_list(atual);
+        add_to_closed_list(atual, my_open_list->father);
+        final = ehIgual(fim, atual->valor);
+        if (final == 1)
         {
-            search_near_noh(atual, adjMatrix, numNos, my_open_list, goal, visitados, count);
-            my_open_list = my_open_list->next;
-            printf("%d", my_open_list->node->valor);
-            atual = my_open_list->node;
-            remove_from_open_list(atual, my_open_list);
-            add_to_closed_list(atual, my_open_list->father, my_closed_list);
-            final = ehIgual(fim, atual->valor);
-            if (final == 1)
-            {
-                break;
-                add_path(caminho, my_closed_list);
-                return 1;
-            }
-            visitados[count] = atual->valor;
-
-            count++;
+            break;
+            add_path(caminho);
+            return 1;
         }
+        visitados[count] = atual->valor;
 
-        return 0;
+        count++;
     }
 
-    //////////////////////////////////////////// BUSCA EM PROFUNDIDADE //////////////////////////////////////
+    return 0;
+}
 
-    // int findPathRec(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados, int* contadorVisitacao) {
-    //     visitados[inicio] = ++(*contadorVisitacao);  // Marca a ordem de visita��o do n� atual
+//////////////////////////////////////////// BUSCA EM PROFUNDIDADE //////////////////////////////////////
 
-    //     adicionarNoh(caminho, inicio);Par
-    //         // Usa visitados para verificar se o n� j� foi visitado
-    //         if (ehIgual(adjMatrix[inicio][i], 1) && ehIgual(visitados[i], 0)) {
-    //             if (findPathRec(adjMatrix, numNos, i, fim, caminho, visitados, contadorVisitacao)) {
-    //                 return 1;
-    //             }
-    //         }
-    //     }
+// int findPathRec(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados, int* contadorVisitacao) {
+//     visitados[inicio] = ++(*contadorVisitacao);  // Marca a ordem de visita��o do n� atual
 
-    //     removerNoh(caminho, inicio);
-    //     return 0;
-    // }
+//     adicionarNoh(caminho, inicio);Par
+//         // Usa visitados para verificar se o n� j� foi visitado
+//         if (ehIgual(adjMatrix[inicio][i], 1) && ehIgual(visitados[i], 0)) {
+//             if (findPathRec(adjMatrix, numNos, i, fim, caminho, visitados, contadorVisitacao)) {
+//                 return 1;
+//             }
+//         }
+//     }
 
-    // int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados) {
-    //     int contadorVisitacao = 0;  // Inicializa o contador de visita��o
+//     removerNoh(caminho, inicio);
+//     return 0;
+// }
 
-    //     for (int i = 0; ehMenor(i, numNos); i++) {
-    //         visitados[i] = 0;  // Zera o vetor de n�s visitados
-    //     }
+// int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados) {
+//     int contadorVisitacao = 0;  // Inicializa o contador de visita��o
 
-    //     return findPathRec(adjMatrix, numNos, inicio, fim, caminho, visitados, &contadorVisitacao);
-    // }
+//     for (int i = 0; ehMenor(i, numNos); i++) {
+//         visitados[i] = 0;  // Zera o vetor de n�s visitados
+//     }
+
+//     return findPathRec(adjMatrix, numNos, inicio, fim, caminho, visitados, &contadorVisitacao);
+// }
