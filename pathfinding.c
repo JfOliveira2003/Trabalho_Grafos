@@ -134,7 +134,7 @@ int findPath(int **adjMatrix, int numNodes, int startNode, int endNode, Noh **pa
         addNodeToList(&closedList, currentNode);
 
         // End!
-        if (currentNode == endNode)
+        if (ehIgual(currentNode,endNode))
         {
             // build path
             for (int node = endNode; ehDiferente(node,-1); node = previousNode[node])
