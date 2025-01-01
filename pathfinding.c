@@ -5,12 +5,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <limits.h>
-#include <math.h>
-
-int heuristic(int node, int goal)
-{
-    return abs(node - goal);
-}
 
 int *createVetorInt(int size)
 {
@@ -85,11 +79,10 @@ void freeNodeList(NodeList *list)
     list->size = 0;
 }
 
+// Dijkstra's Algorithm
 int findPath(int **adjMatrix, int numNodes, int startNode, int endNode, Noh **path, int *visitedNodes)
 {
     int *costFromStart = createVetorInt(numNodes);
-    int *heuristicCost = createVetorInt(numNodes);
-    int *totalCost = createVetorInt(numNodes);
     int *previousNode = createVetorInt(numNodes);
 
     NodeList openList = createNodeList(numNodes);
@@ -101,50 +94,42 @@ int findPath(int **adjMatrix, int numNodes, int startNode, int endNode, Noh **pa
     for (int i = 0; ehMenor(i, numNodes); i++)
     {
         costFromStart[i] = INT_MAX;
-        heuristicCost[i] = 0;
-        totalCost[i] = INT_MAX;
         previousNode[i] = -1;
         visitedNodes[i] = 0;
     }
 
     // Initialize start node
     costFromStart[startNode] = 0;
-    heuristicCost[startNode] = heuristic(startNode, endNode);
-    totalCost[startNode] = heuristicCost[startNode];
     addNodeToList(&openList, startNode);
     visitedNodes[startNode] = ++visitCounter;
 
     while (openList.size > 0)
     {
-
-        // find the node with the smallest totalCost in openList
+        // Find the node with the smallest costFromStart in openList
         int currentNodeIndex = 0;
         int currentNode = openList.nodes[0];
         for (int i = 1; ehMenor(i, openList.size); i++)
         {
-            if (ehMenor(totalCost[openList.nodes[i]], totalCost[currentNode]))
+            if (ehMenor(costFromStart[openList.nodes[i]], costFromStart[currentNode]))
             {
                 currentNode = openList.nodes[i];
                 currentNodeIndex = i;
             }
         }
 
-        // Remove da lista aberta e passa para a lista fechada
+        // Remove from the open list and add to the closed list
         removeNodeFromList(&openList, currentNodeIndex);
         addNodeToList(&closedList, currentNode);
 
-        // End!
-        if (ehIgual(currentNode,endNode))
+        // If we've reached the end node, build the path
+        if (ehIgual(currentNode, endNode))
         {
-            // build path
-            for (int node = endNode; ehDiferente(node,-1); node = previousNode[node])
+            for (int node = endNode; ehDiferente(node, -1); node = previousNode[node])
             {
                 addNoh(path, node);
             }
 
             free(costFromStart);
-            free(heuristicCost);
-            free(totalCost);
             free(previousNode);
             freeNodeList(&openList);
             freeNodeList(&closedList);
@@ -154,7 +139,7 @@ int findPath(int **adjMatrix, int numNodes, int startNode, int endNode, Noh **pa
         // Explore neighbors
         for (int neighbor = 0; ehMenor(neighbor, numNodes); neighbor++)
         {
-            // check nó válido
+            // Check if neighbor is valid
             if (ehIgual(adjMatrix[currentNode][neighbor], 0) || isNodeInList(&closedList, neighbor))
                 continue;
 
@@ -163,13 +148,11 @@ int findPath(int **adjMatrix, int numNodes, int startNode, int endNode, Noh **pa
             if (ehIgual(isNodeInList(&openList, neighbor), 0))
             {
                 addNodeToList(&openList, neighbor);
-                heuristicCost[neighbor] = heuristic(neighbor, endNode);
             }
 
             if (ehMenor(currentNodeCost, costFromStart[neighbor]))
             {
                 costFromStart[neighbor] = currentNodeCost;
-                totalCost[neighbor] = costFromStart[neighbor] + heuristicCost[neighbor];
                 previousNode[neighbor] = currentNode;
                 visitedNodes[neighbor] = ++visitCounter;
             }
@@ -178,8 +161,6 @@ int findPath(int **adjMatrix, int numNodes, int startNode, int endNode, Noh **pa
 
     // Default return, path not found
     free(costFromStart);
-    free(heuristicCost);
-    free(totalCost);
     free(previousNode);
     freeNodeList(&openList);
     freeNodeList(&closedList);
