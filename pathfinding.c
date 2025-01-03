@@ -172,7 +172,7 @@ void add_path(Noh **caminho)
 {
     closed_list *current = my_closed_list;
     adicionarNoh(caminho, current->node->valor);
-    Noh *aux = current->father;
+    Noh *aux = (*current).father;
     while (aux != NULL)
     {
         adicionarNoh(caminho, aux->valor);
@@ -185,32 +185,32 @@ void add_to_closed_list(Noh *node, Noh *father)
 {
     if (my_closed_list->node == NULL)
     {
-        my_closed_list->node = node;
-        my_closed_list->father = father;
-        my_closed_list->next = NULL;
+        (*my_closed_list).node = node;
+        (*my_closed_list).father = father;
+        (*my_closed_list).next = NULL;
     }
     else
     {
         closed_list *current = my_closed_list;
-        while (current->next != NULL)
+        while ((*current).next != NULL)
         {
             current = current->next;
         }
         closed_list *new_closed_list = (closed_list *)malloc(sizeof(closed_list));
-        new_closed_list->node = node;
-        new_closed_list->father = father;
-        new_closed_list->next = NULL;
-        current->next = new_closed_list;
+        (*new_closed_list).node = node;
+        (*new_closed_list).father = father;
+        (*new_closed_list).next = NULL;
+        (*current).next = new_closed_list;
     }
 }
 
 int heuristc(Noh *current_noh, Noh *goal, int size)
 {
-    int x1 = current_noh->valor % size;
-    int y1 = current_noh->valor / size;
+    int x1 = ((*current_noh).valor) % size;
+    int y1 = ((*current_noh).valor) / size;
 
-    int x2 = goal->valor % size;
-    int y2 = goal->valor / size;
+    int x2 = (*goal).valor % size;
+    int y2 = ((*goal).valor) / size;
 
     return (abs(x1 - x2) + abs(y1 - y2));
 }
@@ -232,18 +232,18 @@ void search_near_noh(Noh *node, int **adjMatrix, int numNos, Noh *fim, int *visi
         int line = node->valor / numNos;
         int node_adj_value = adjMatrix[line][i];
         aux = criarNoh(i);
-        if (ehIgual(node_adj_value, 1)== 1 && search_in_closed_list(aux) == 0)
+        if ((ehIgual(node_adj_value, 1)== 1) && search_in_closed_list(aux) == 0)
         {
-            Noh *node_adj = criarNoh(i);
-            if (search_in_open_list(node_adj) == 1)
+            //Noh *node_adj = criarNoh(i);
+            if (search_in_open_list(aux) == 1)
             {
-                int cost = cost_to_use_Node(node_adj, fim, numNos, count);
-                compare_F(node_adj, cost);
+                int cost = cost_to_use_Node(aux, fim, numNos, count);
+                compare_F(aux, cost);
             }
-            else if (search_in_open_list(node_adj) == 0)
+            else if (search_in_open_list(aux) == 0)
             {
-                int cost = cost_to_use_Node(node_adj, fim, numNos, count);
-                add_to_open_list(node_adj, node, cost);
+                int cost = cost_to_use_Node(aux, fim, numNos, count);
+                add_to_open_list(aux, node, cost);
             }
         }
     }
@@ -265,10 +265,10 @@ int findPath(int **adjMatrix, int numNos, int inicio, int fim, Noh **caminho, in
 
     int final = ehIgual(fim, atual->valor);
     printf("%d", final);
-    while (final != 1 || my_open_list->node != NULL)
+    while (my_open_list != NULL)
     {
         search_near_noh(atual, adjMatrix, numNos, goal, visitados, count);
-        my_open_list = my_open_list->next;
+        //my_open_list = my_open_list->next;
         printf("%d", my_open_list->node->valor);
         atual = my_open_list->node;
         remove_from_open_list(atual);
@@ -276,8 +276,8 @@ int findPath(int **adjMatrix, int numNos, int inicio, int fim, Noh **caminho, in
         final = ehIgual(fim, atual->valor);
         if (final == 1)
         {
-            break;
             add_path(caminho);
+            visitados[count] = atual->valor;
             return 1;
         }
         visitados[count] = atual->valor;
@@ -291,10 +291,16 @@ int findPath(int **adjMatrix, int numNos, int inicio, int fim, Noh **caminho, in
 //////////////////////////////////////////// BUSCA EM PROFUNDIDADE //////////////////////////////////////
 
 // int findPathRec(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados, int* contadorVisitacao) {
-//     visitados[inicio] = ++(*contadorVisitacao);  // Marca a ordem de visita��o do n� atual
+//     visitados[inicio] = ++(*contadorVisitacao);  // Marca a ordem de visitação do nó atual
 
-//     adicionarNoh(caminho, inicio);Par
-//         // Usa visitados para verificar se o n� j� foi visitado
+//     adicionarNoh(caminho, inicio);
+
+//     if (ehIgual(inicio, fim)) {
+//         return 1;
+//     }
+
+//     for (int i = 0; ehMenor(i, numNos); i++) {
+//         // Usa visitados para verificar se o nó já foi visitado
 //         if (ehIgual(adjMatrix[inicio][i], 1) && ehIgual(visitados[i], 0)) {
 //             if (findPathRec(adjMatrix, numNos, i, fim, caminho, visitados, contadorVisitacao)) {
 //                 return 1;
@@ -307,10 +313,10 @@ int findPath(int **adjMatrix, int numNos, int inicio, int fim, Noh **caminho, in
 // }
 
 // int findPath(int** adjMatrix, int numNos, int inicio, int fim, Noh** caminho, int* visitados) {
-//     int contadorVisitacao = 0;  // Inicializa o contador de visita��o
+//     int contadorVisitacao = 0;  // Inicializa o contador de visitação
 
 //     for (int i = 0; ehMenor(i, numNos); i++) {
-//         visitados[i] = 0;  // Zera o vetor de n�s visitados
+//         visitados[i] = 0;  // Zera o vetor de nós visitados
 //     }
 
 //     return findPathRec(adjMatrix, numNos, inicio, fim, caminho, visitados, &contadorVisitacao);
